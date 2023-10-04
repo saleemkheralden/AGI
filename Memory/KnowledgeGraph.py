@@ -3,6 +3,7 @@ from Memory.Edge import Edge
 import networkx as nx
 import matplotlib.pyplot as plt
 
+
 class KnowledgeGraph:
     def __init__(self):
         self.nodes = {}
@@ -44,6 +45,30 @@ class KnowledgeGraph:
         pos = nx.spring_layout(graph)
         nx.draw(graph, pos, with_labels=True)
         plt.show()
+
+
+    def d3js_json(self):
+        ret = {'nodes': [], 'links': []}
+
+        for node_id, node in self.nodes.items():
+            ret['nodes'].append({
+                'id': node_id,
+                'label': node.label,
+                'type': node.type,
+                'attributes': node.attributes
+            })
+        for edge in self.edges:
+            ret['links'].append({
+                'source': edge.source.id,
+                'target': edge.target.id,
+                'label': edge.label,
+                'attributes': edge.attributes
+            })
+
+        return ret
+
+
+
 
 
 

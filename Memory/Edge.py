@@ -14,3 +14,9 @@ class Edge:
 
     def get_attribute(self, key):
         return self.attributes.get(key, None)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return f"Edge(source: {self.source}, target: {self.target})"
