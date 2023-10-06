@@ -1,8 +1,31 @@
+from Memory.MemoryUnit import MemoryUnit
 
-class Node:
-    def __init__(self, id, label=None, type=None, attributes=None):
+class Node(MemoryUnit):
+    def __init__(self,
+                 id,
+                 imp_score=.0,
+                 imp_spike_factor=.0,
+                 imp_spike_add=.0,
+                 imp_decay_factor=.0,
+                 core_thresh=.0,
+                 ob_thresh=.0,
+
+                 act_score=.0,
+                 act_decay_factor=.0,
+                 type=None,
+                 attributes=None):
+
+        super(Node, self).__init__(imp_score=imp_score,
+                 imp_spike_factor=imp_spike_factor,
+                 imp_spike_add=imp_spike_add,
+                 imp_decay_factor=imp_decay_factor,
+                 core_thresh=core_thresh,
+                 ob_thresh=ob_thresh,
+                 act_score=act_score,
+                 act_decay_factor=act_decay_factor)
+
         self.id = id
-        self.label = label
+        # self.label = label
         self.type = type
         self.attributes = attributes if attributes is not None else {}
 
@@ -20,7 +43,7 @@ class Node:
         return self.__str__()
 
     def __str__(self):
-        return f"MemoryNode(ID: {self.id}, Label: {self.label})"
+        return f"MemoryNode(ID: {self.id}, Label: {self.type})"
 
 
 

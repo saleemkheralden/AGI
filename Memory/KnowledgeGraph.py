@@ -2,12 +2,18 @@ from Memory.Node import Node
 from Memory.Edge import Edge
 import networkx as nx
 import matplotlib.pyplot as plt
-
+import json
+import pyvis
 
 class KnowledgeGraph:
-    def __init__(self):
+    def __init__(self, connect_ui=True):
         self.nodes = {}
         self.edges = []
+        self.connect_ui = connect_ui
+        if self.connect_ui:
+            pass
+
+
 
     def add_node(self, node: Node):
         self.nodes[node.id] = node

@@ -1,5 +1,30 @@
-class Edge:
-    def __init__(self, source, target, label=None, attributes=None):
+from Memory.MemoryUnit import MemoryUnit
+class Edge(MemoryUnit):
+
+    def __init__(self,
+                 id,
+                 source, target,
+                 imp_score=.0,
+                 imp_spike_factor=.0,
+                 imp_spike_add=.0,
+                 imp_decay_factor=.0,
+                 core_thresh=.0,
+                 ob_thresh=.0,
+
+                 act_score=.0,
+                 act_decay_factor=.0,
+                 label=None,
+                 attributes=None):
+
+        super(Edge, self).__init__(imp_score=imp_score,
+                                   imp_spike_factor=imp_spike_factor,
+                                   imp_spike_add=imp_spike_add,
+                                   imp_decay_factor=imp_decay_factor,
+                                   core_thresh=core_thresh,
+                                   ob_thresh=ob_thresh,
+                                   act_score=act_score,
+                                   act_decay_factor=act_decay_factor)
+
         self.source = source
         self.target = target
         self.label = label

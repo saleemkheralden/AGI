@@ -27,7 +27,6 @@ class Memory:
             self.images.pop(0)
 
         self.knowledge_graph.add_node(Node(id=self.hash(f"image_{self.image_idx}"),
-                                           label=None,
                                            type="image",
                                            attributes={"encoding": self.encoder.encode_image(image)}))
         self.image_idx += 1
@@ -72,7 +71,6 @@ class Memory:
 
     def perceive_text(self, text):
         self.knowledge_graph.add_node(Node(id=self.hash(f"text_{self.text_idx}"),
-                                           label=None,
                                            type="text",
                                            attributes={"encoding": self.encoder.encode_text(text)}))
         self.text_idx += 1
