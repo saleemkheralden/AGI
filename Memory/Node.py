@@ -3,6 +3,7 @@ from Memory.MemoryUnit import MemoryUnit
 class Node(MemoryUnit):
     def __init__(self,
                  id,
+                 label=None,
                  imp_score=.0,
                  imp_spike_factor=.0,
                  imp_spike_add=.0,
@@ -25,7 +26,7 @@ class Node(MemoryUnit):
                  act_decay_factor=act_decay_factor)
 
         self.id = id
-        # self.label = label
+        self.label = label
         self.type = type
         self.attributes = attributes if attributes is not None else {}
 
@@ -43,7 +44,10 @@ class Node(MemoryUnit):
         return self.__str__()
 
     def __str__(self):
-        return f"MemoryNode(ID: {self.id}, Label: {self.type})"
+        id_str = str(self.id)
+        if len(id_str) > 5:
+            id_str = f"{id_str[:5]}...{id_str[-4:]}"
+        return f"MemoryNode(ID: {id_str}, Label: {self.label})"
 
 
 

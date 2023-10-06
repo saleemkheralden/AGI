@@ -3,7 +3,7 @@ from Memory.Edge import Edge
 import networkx as nx
 import matplotlib.pyplot as plt
 import json
-import pyvis
+from pyvis.network import Network
 
 class KnowledgeGraph:
     def __init__(self, connect_ui=True):
@@ -12,8 +12,6 @@ class KnowledgeGraph:
         self.connect_ui = connect_ui
         if self.connect_ui:
             pass
-
-
 
     def add_node(self, node: Node):
         self.nodes[node.id] = node
@@ -74,6 +72,26 @@ class KnowledgeGraph:
         return ret
 
 
+    def pyvis(self):
+        net = Network(
+            notebook=True,
+
+            select_menu=True,
+            filter_menu=True
+        )
+
+        # node_keys = list(self.nodes.values())
+        node_keys = [str(e.label) for e in self.nodes.values()]
+
+        net.add_nodes(node_keys, label=list(map(str, self.nodes.values())))
+        net.add_node(60, shape="image", image="https://i.natgeofe.com/n/548467d8-c5f1-4551-9f58-6817a8d2c45e/NationalGeographic_2572187_square.jpg", label="cat")
+
+        net.add_edges([(int(e.source.label) if e.source.label.isdigit() else e.source.label,
+                        int(e.target.label) if e.target.label.isdigit() else e.target.label)
+                       for e in self.edges])
+
+        net.show("KnowledgeGraph.html")
+        return net
 
 
 
