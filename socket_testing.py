@@ -1,55 +1,54 @@
 from Memory.KnowledgeGraph import KnowledgeGraph
 from Memory.Node import Node
-from Memory.Edge import Edge
-from hashlib import sha3_512 as sha
+from time import sleep
+
+kg = KnowledgeGraph(connect_ui=True)
+
+node = Node(id="000000001",
+			label="cat picture",
+			type="image",
+			encoding=[0.1, 0, 5],
+			str_score=1.7,
+			str_decay_factor=0.8)
+
+node2 = Node(id="000000002",
+			label="dog picture",
+			type="image",
+			encoding=[0.8, 1, 4.1],
+			str_score=3.2,
+			str_decay_factor=0.152)
 
 
-alpha = 'abcdefghijklmnopqrstuvwxyz'
-digits = '0123456789'
-words = ['apple', 'banana', 'dad', 'mom']
 
-def hash(str):
-    return sha(f'{str}'.encode('utf-8')).hexdigest()
+kg.add_node(node)
+print(kg.updates_queue.queue)
 
-kg = KnowledgeGraph()
+sleep(5)
 
-prev_node = None
-for letter in alpha:
-    node = Node(id=hash(letter), label=letter)
-    kg.add_node(node)
-
-    if prev_node is not None:
-        kg.add_edge(Edge(id=hash(f"{node.id}{prev_node.id}"),
-                         source=prev_node,
-                         target=node))
-
-    prev_node = node
+kg.add_node(node2)
+print(kg.updates_queue.queue)
 
 
-prev_node = None
-for digit in digits:
-    node = Node(id=hash(digit), label=digit)
-    kg.add_node(node)
-
-    if prev_node is not None:
-        kg.add_edge(Edge(id=hash(f"{node.id}{prev_node.id}"),
-                         source=prev_node,
-                         target=node))
-
-    prev_node = node
-
-for word in words:
-    node = Node(id=hash(word), label=word)
-    kg.add_node(node)
-
-    for letter in word:
-        letter_node = kg.get_node(hash(letter))
-        kg.add_edge(Edge(id=hash(f"{node.id}{letter_node.id}"),
-                         source=node,
-                         target=letter_node))
 
 
-kg.pyvis()
+msg = ""
+while msg != "QUIT":
+	msg = input("msg")
+
+	id = input("id: ")
+	label = input("label: ")
+	type = input("type: ")
+	kg.add_node(Node(id=id,
+					 label=label,
+					 type=type,
+					 encoding=[0] * 3,
+					 str_score=0,
+					 str_decay_factor=0.7))
+	print(kg.updates_queue.queue)
+
+
+
+kg.server_status = False
 
 
 

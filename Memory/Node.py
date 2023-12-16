@@ -7,7 +7,7 @@ class Node(MemoryUnit):
                  id,
                  label=None, # label is a text explanation of the node
                  type=None, # type can be: image, text, audio ...
-                 enconding=None,
+                 encoding=None,
                  str_score=0,
                  str_decay_factor=0,
                  # att_score=0,
@@ -21,7 +21,7 @@ class Node(MemoryUnit):
 
         self.label = label
         self.type = type
-        self.encoding = enconding
+        self.encoding = encoding
 
         self.conn = {}
 
@@ -48,13 +48,13 @@ class Node(MemoryUnit):
             del self.conn[edge.target.id]
 
     def __repr__(self):
-        return self.__str__()
-
-    def __str__(self):
         id_str = str(self.id)
         if len(id_str) > 5:
-            id_str = f"{id_str[:5]}...{id_str[-4:]}"
+            id_str = f"{id_str[:3]}...{id_str[-3:]}"
         return f"MemoryNode(ID: {id_str}, Label: {self.label})"
+
+    def __str__(self):
+        return f"({self.id},{self.type},{self.label})#{self.str_score}"
 
 
 

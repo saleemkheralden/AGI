@@ -8,7 +8,21 @@ const node_radius = 10, node_radius_h = 15,
 const node_index = {}
 const node_keys = new Set()
 
+let socket;
+
 $(document).ready(function () {
+
+    socket = io("127.0.0.1:5000")
+
+    socket.on("connect", () => {
+        socket.emit("client-connect", {"msg": "hello"})
+    })
+
+    socket.on("hello", (args) => {
+        console.log(args);
+        alert("OKOK");
+    })
+
     let graph_div = document.getElementById('graph');
     let width = graph_div.clientWidth, height = graph_div.clientHeight;
 
