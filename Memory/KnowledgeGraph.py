@@ -2,13 +2,15 @@ from Memory.Node import Node
 from Memory.Edge import Edge
 import networkx as nx
 import matplotlib.pyplot as plt
-import json
+# import json
 from pyvis.network import Network
+# from hashlib import sha3_512 as sha
 
 class KnowledgeGraph:
     def __init__(self, connect_ui=True):
         self.nodes = {}
-        self.edges = []
+        self.edges = []  # might be removed
+        self.neigh_matrix = {}
         self.connect_ui = connect_ui
         if self.connect_ui:
             pass
@@ -25,12 +27,26 @@ class KnowledgeGraph:
             return self.nodes[node_id]
         return None
 
+    def add_edge(self, source, target):
+        _edge = Edge(id=hash(f"{source.id}{target.id}"),
+                           source=source,
+                           target=target)
+        self.add_edge(_edge)
+
     def add_edge(self, edge: Edge):
         self.edges.append(edge)
+        edge.source.add_conn(edge)
+
+        if edge.source.id not in self.neigh_matrix:
+            self.neigh_matrix[edge.source.id] = {}
+        self.neigh_matrix[edge.source.id][edge.target.id] = edge.str_score
 
     def remove_edge(self, edge):
         if edge in self.edges:
             self.edges.remove(edge)
+        if edge.target.id in self.neigh_matrix[edge.source.id]:
+            self.neigh_matrix[edge.source.id].pop(edge.target.id)
+        edge.source.remove_conn(edge)
 
     def get_all_nodes(self):
         return list(self.nodes)

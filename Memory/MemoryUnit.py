@@ -1,41 +1,39 @@
+import numpy as np
+
 class MemoryUnit:
 
     def __init__(self,
-                 imp_score=.0,
-                 imp_spike_factor=.0,
-                 imp_spike_add=.0,
-                 imp_decay_factor=.0,
-                 core_thresh=.0,
-                 ob_thresh=.0,
+                 id,
+                 str_score=0.,
+                 str_decay_factor=0.,
+                 str_rein_factor=0.,):
 
-                 act_score=.0,
-                 act_decay_factor=.0,):
+        self.id = id
+        self.init_score = str_score
+        self.str_score = str_score
+        self.str_decay_factor = str_decay_factor
+        self.str_rein_factor = str_rein_factor
 
-        self.imp_score = imp_score
-        self.imp_spike_factor = imp_spike_factor
-        self.imp_spike_add = imp_spike_add
-        self.imp_decay_factor = imp_decay_factor
+        self.t = 1
+        self.k = 1.84
+        self.c = 1.25
 
-        self.core_thresh = core_thresh
-        self.ob_thresh = ob_thresh
+    def linear_decay(self):
+        self.str_score = self.str_score  - self.str_decay_factor
 
-        self.act_score = act_score
-        self.act_decay_factor = act_decay_factor
+    def decay(self):
+        self.str_score = self.str_score * self.str_decay_factor
 
+    def ebbinghaus_decay(self):
+        self.str_score = self.init_score * self.ebbinghaus_curve()
+        self.t = self.t + 1
 
+    def ebbinghaus_curve(self):
+        return self.k / ((np.log(self.t) ** self.c) + self.k)
 
-    def excite(self):
-        self.act_score = 1
-
-    def strengthen(self):
-        self.imp_score = self.imp_score * self.imp_spike_factor + self.imp_spike_add
-
-    def imp_decay(self):
-        self.imp_score = self.imp_score * self.imp_decay_factor
-
-    def act_decay(self):
-        self.act_score = self.act_score * self.act_decay_factor
-
+    def reinforce(self):
+        self.str_score = self.str_score * (1 + self.str_rein_factor)
+        # make the self.k higher
 
 
 

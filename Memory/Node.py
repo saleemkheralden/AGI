@@ -1,44 +1,51 @@
 from Memory.MemoryUnit import MemoryUnit
+import numpy as np
 
 class Node(MemoryUnit):
+
     def __init__(self,
                  id,
-                 label=None,
-                 imp_score=.0,
-                 imp_spike_factor=.0,
-                 imp_spike_add=.0,
-                 imp_decay_factor=.0,
-                 core_thresh=.0,
-                 ob_thresh=.0,
+                 label=None, # label is a text explanation of the node
+                 type=None, # type can be: image, text, audio ...
+                 enconding=None,
+                 str_score=0,
+                 str_decay_factor=0,
+                 # att_score=0,
+                 # att_decay_factor=0,
+                 # attributes=None):
+                 ):
 
-                 act_score=.0,
-                 act_decay_factor=.0,
-                 type=None,
-                 attributes=None):
+        super(Node, self).__init__(id=id,
+                                   str_score=str_score,
+                                   str_decay_factor=str_decay_factor)
 
-        super(Node, self).__init__(imp_score=imp_score,
-                 imp_spike_factor=imp_spike_factor,
-                 imp_spike_add=imp_spike_add,
-                 imp_decay_factor=imp_decay_factor,
-                 core_thresh=core_thresh,
-                 ob_thresh=ob_thresh,
-                 act_score=act_score,
-                 act_decay_factor=act_decay_factor)
-
-        self.id = id
         self.label = label
         self.type = type
-        self.attributes = attributes if attributes is not None else {}
+        self.encoding = enconding
 
-    def add_attribute(self, key, value):
-        self.attributes[key] = value
+        self.conn = {}
 
-    def remove_attribute(self, key):
-        if key in self.attributes.keys():
-            del self.attributes[key]
+        # self.att_score = att_score
+        # self.att_decay_factor = att_decay_factor
 
-    def get_attribute(self, key):
-        return self.attributes.get(key, None)
+        # self.attributes = attributes if attributes is not None else {}
+
+    # def add_attribute(self, key, value):
+    #     self.attributes[key] = value
+
+    # def remove_attribute(self, key):
+    #     if key in self.attributes.keys():
+    #         del self.attributes[key]
+
+    # def get_attribute(self, key):
+    #     return self.attributes.get(key, None)
+
+    def add_conn(self, edge):
+        self.conn[edge.target.id] = edge
+
+    def remove_conn(self, edge):
+        if edge.target.id in self.conn:
+            del self.conn[edge.target.id]
 
     def __repr__(self):
         return self.__str__()

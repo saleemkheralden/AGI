@@ -1,0 +1,9 @@
+Node V
+    Decay V
+    Reinforce
+Edge V
+    Decay V
+    Reinforce
+Graph V
+LTM
+STM
