@@ -10,6 +10,7 @@ class cmd(Enum):
 class string_delim(Enum):
 	COMMAND_TYPE = "@"
 	OBJECT_TYPE = "$"
+	# OBJECT_DEL = "&"
 	DATA_DEL = "#"
 
 class obj(Enum):
