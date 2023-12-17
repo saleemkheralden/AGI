@@ -10,7 +10,7 @@ dir = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(dir)
 sys.path.append(parent)
 
-from server_commands import cmd
+from server_commands import cmd, string_delim, obj
 
 
 app = Flask(__name__)
@@ -37,26 +37,41 @@ except Exception as e:
 # print("soc connected")
 def remote_server_handler():
     sleep(3)
+    soc.send(cmd.INIT.value.encode("utf-8"))
+    print("Sending init")
     while True:
         # soc.send(cmd.UPDATE.value.encode("utf-8"))
 
         try:
             msg = soc.recv(BUF_SIZE)
             msg = msg.decode()
-            print(f"kg server> {msg}")
         except socket.timeout as e:
             msg = None
 
-        socketio.emit("hello", {"msg": msg})
+        if msg:
+            print(f"server> {msg}")
 
-        # if msg:
-        #     print(msg)
-        #     socketio.emit("hello", {"msg": "OLA"})
+            cmd_type, msg = msg.split(string_delim.COMMAND_TYPE.value)
+            obj_type, msg = msg.split(string_delim.OBJECT_TYPE.value)
+            data, str_score = msg.split(string_delim.DATA_DEL.value)
 
-        # if msg:
-        #     print(msg)
-        #     socketio.emit("hello", {"msg": msg[0]})
-        #     print("EMIT")
+            if obj_type == obj.NODE.value:
+                id, type, label = data[1:-1].split(",")
+                print(id, type, label)
+
+                socketio.emit("add-node", {
+                    "id": id,
+                    "type": type,
+                    "label": label
+                })
+
+
+            # print(cmd_type)
+            # print(obj_type)
+            # print(data)
+            # print(str_score)
+
+            # socketio.emit("hello", {"msg": msg})
 
         sleep(1)
         if msg == cmd.SHUTDOWN:
@@ -67,11 +82,12 @@ def remote_server_handler():
 if CONN_FLAG:
     th = Thread(target=remote_server_handler)
     th.start()
+    CONN_FLAG = False
 
 
 @socketio.on("client-connect")
 def client_connect(args):
-    print(args)
+    soc.send(cmd.INIT.value.encode("utf-8"))
     socketio.emit("hello", {"msg": "HELLO"})
 
 @app.route('/')
@@ -79,4 +95,4 @@ def index():
     return render_template('index.html')
 
 
-socketio.run(app.run(server_ip, server_port, debug=True))
+socketio.run(app.run(server_ip, server_port))

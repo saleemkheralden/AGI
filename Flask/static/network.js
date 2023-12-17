@@ -11,6 +11,76 @@ const node_keys = new Set()
 let socket;
 
 $(document).ready(function () {
+    // const data = {
+    //     'nodes': [
+    //         {'id': 1, "name": "Discrete Mathematics", "level": 0},
+    //         {'id': 2, "name": "Calculus 1", "level": 0},
+    //         {'id': 3, "name": "Algebra", "level": 0},
+    //         {'id': 4, "name": "Intro to comp. sc.", "level": 0},
+    //         {'id': 5, "name": "Physics 1", "level": 0},
+    //
+    //         {'id': 6, "name": "Into to Data science", "level": 1},
+    //         {'id': 7, "name": "Software eng.", "level": 1},
+    //         {'id': 8, "name": "Computer arch. and OS", "level": 1},
+    //         {'id': 9, "name": "Probability", "level": 1},
+    //         {'id': 10, "name": "Calculus 2", "level": 1},
+    //
+    //         {'id': 11, "name": "Game theory", "level": 2},
+    //         {'id': 12, "name": "Data structures", "level": 2},
+    //         {'id': 13, "name": "Databases", "level": 2},
+    //         {'id': 14, "name": "Algebra for data science", "level": 2},
+    //         {'id': 15, "name": "Statistics 1", "level": 2},
+    //
+    //         {'id': 16, "name": "Stochastic models", "level": 3},
+    //         {'id': 17, "name": "E-comm", "level": 3},
+    //         {'id': 18, "name": "Distributed DBs", "level": 3},
+    //         {'id': 19, "name": "Non-linear models", "level": 3},
+    //         {'id': 20, "name": "Into to complexity", "level": 3},
+    //         {'id': 21, "name": "Machine Learning 1", "level": 3},
+    //
+    //         // {'id': 21, "name": "Machine Learning 1", "level": 4},
+    //
+    //     ],
+    //     'links': [
+    //         {"source": 6, "target": 4, "weight": 1},
+    //         {"source": 6, "target": 3, "weight": 1},
+    //         {"source": 7, "target": 4, "weight": 1},
+    //         {"source": 8, "target": 4, "weight": 1},
+    //         {"source": 9, "target": 2, "weight": 1},
+    //         {"source": 10, "target": 2, "weight": 1},
+    //
+    //         {"source": 11, "target": 2, "weight": 1},
+    //         {"source": 11, "target": 3, "weight": 1},
+    //         {"source": 12, "target": 1, "weight": 0.5},
+    //         {"source": 12, "target": 7, "weight": 1},
+    //         {"source": 13, "target": 1, "weight": 0.5},
+    //         {"source": 13, "target": 4, "weight": 1},
+    //         {"source": 14, "target": 1, "weight": 1},
+    //         {"source": 14, "target": 2, "weight": 1},
+    //         {"source": 14, "target": 3, "weight": 1},
+    //         {"source": 14, "target": 4, "weight": 1},
+    //         {"source": 15, "target": 9, "weight": 1},
+    //
+    //         {"source": 16, "target": 9, "weight": 1},
+    //         {"source": 16, "target": 3, "weight": 1},
+    //         {"source": 16, "target": 4, "weight": 1},
+    //         {"source": 17, "target": 12, "weight": 1},
+    //         {"source": 17, "target": 9, "weight": 1},
+    //         {"source": 18, "target": 13, "weight": 1},
+    //         {"source": 19, "target": 10, "weight": 1},
+    //         {"source": 20, "target": 12, "weight": 1},
+    //         {"source": 21, "target": 15, "weight": 1},
+    //         {"source": 21, "target": 4, "weight": 1},
+    //
+    //     ]
+    // }
+
+    const data = {
+        'nodes': [
+            {'id': 1, "name": "Discrete Mathematics", "level": 0},
+        ],
+        'links': [],
+    }
 
     socket = io("127.0.0.1:5000")
 
@@ -20,76 +90,21 @@ $(document).ready(function () {
 
     socket.on("hello", (args) => {
         console.log(args);
-        alert("OKOK");
+        // alert("OKOK");
+    })
+
+    socket.on("add-node", (args) => {
+        console.log(args)
+        addNode({
+            "id": args.id,
+            "name": args.label,
+            "level": 0
+        })
+
     })
 
     let graph_div = document.getElementById('graph');
     let width = graph_div.clientWidth, height = graph_div.clientHeight;
-
-
-    const data = {
-        'nodes': [
-            {'id': 1, "name": "Discrete Mathematics", "level": 0},
-            {'id': 2, "name": "Calculus 1", "level": 0},
-            {'id': 3, "name": "Algebra", "level": 0},
-            {'id': 4, "name": "Intro to comp. sc.", "level": 0},
-            {'id': 5, "name": "Physics 1", "level": 0},
-
-            {'id': 6, "name": "Into to Data science", "level": 1},
-            {'id': 7, "name": "Software eng.", "level": 1},
-            {'id': 8, "name": "Computer arch. and OS", "level": 1},
-            {'id': 9, "name": "Probability", "level": 1},
-            {'id': 10, "name": "Calculus 2", "level": 1},
-
-            {'id': 11, "name": "Game theory", "level": 2},
-            {'id': 12, "name": "Data structures", "level": 2},
-            {'id': 13, "name": "Databases", "level": 2},
-            {'id': 14, "name": "Algebra for data science", "level": 2},
-            {'id': 15, "name": "Statistics 1", "level": 2},
-
-            {'id': 16, "name": "Stochastic models", "level": 3},
-            {'id': 17, "name": "E-comm", "level": 3},
-            {'id': 18, "name": "Distributed DBs", "level": 3},
-            {'id': 19, "name": "Non-linear models", "level": 3},
-            {'id': 20, "name": "Into to complexity", "level": 3},
-            {'id': 21, "name": "Machine Learning 1", "level": 3},
-
-            // {'id': 21, "name": "Machine Learning 1", "level": 4},
-
-        ],
-        'links': [
-            {"source": 6, "target": 4, "weight": 1},
-            {"source": 6, "target": 3, "weight": 1},
-            {"source": 7, "target": 4, "weight": 1},
-            {"source": 8, "target": 4, "weight": 1},
-            {"source": 9, "target": 2, "weight": 1},
-            {"source": 10, "target": 2, "weight": 1},
-
-            {"source": 11, "target": 2, "weight": 1},
-            {"source": 11, "target": 3, "weight": 1},
-            {"source": 12, "target": 1, "weight": 0.5},
-            {"source": 12, "target": 7, "weight": 1},
-            {"source": 13, "target": 1, "weight": 0.5},
-            {"source": 13, "target": 4, "weight": 1},
-            {"source": 14, "target": 1, "weight": 1},
-            {"source": 14, "target": 2, "weight": 1},
-            {"source": 14, "target": 3, "weight": 1},
-            {"source": 14, "target": 4, "weight": 1},
-            {"source": 15, "target": 9, "weight": 1},
-
-            {"source": 16, "target": 9, "weight": 1},
-            {"source": 16, "target": 3, "weight": 1},
-            {"source": 16, "target": 4, "weight": 1},
-            {"source": 17, "target": 12, "weight": 1},
-            {"source": 17, "target": 9, "weight": 1},
-            {"source": 18, "target": 13, "weight": 1},
-            {"source": 19, "target": 10, "weight": 1},
-            {"source": 20, "target": 12, "weight": 1},
-            {"source": 21, "target": 15, "weight": 1},
-            {"source": 21, "target": 4, "weight": 1},
-
-        ]
-    }
 
 
     let zoom = d3.zoom()
@@ -342,6 +357,89 @@ $(document).ready(function () {
         node_index[e.name] = {'id': e.id, 'coor': [e.x, e.y]};
         node_keys.add(e.name);
     }
+
+     var _nodes = simulation.nodes();
+
+    function updateGraph() {
+
+        // let textsAndNodes = zoom_elem.append("g")
+        //      .selectAll("g")
+        //      .data(data.nodes)
+        //      .enter()
+        //      .append("g")
+        //      .attr("class", "textsAndNodes")
+        //      .call(drag(simulation))
+
+        let node = zoom_elem
+            .selectAll("g.textAndNodes")
+            .data(_nodes, function(d) { return d.id;})
+
+        node.exit().remove();
+
+        let textsAndNodes = node.enter()
+            .append("g")
+            .attr("class", "textsAndNodes")
+            .call(drag(simulation))
+
+        let nodes = textsAndNodes.selectAll("circle")
+            .data(_nodes, function(d) { return d.id; })
+
+        nodes.exit().remove();
+
+        nodes.append("a")
+            .append("circle")
+            .attr("r", node_radius)
+            .on("mouseover", function (d) {
+                show_nodes(d, this);
+            })
+            .on("mouseout", function (d) {
+                d3.selectAll("circle").style("opacity", nodes_opacity_);
+                d3.selectAll("line").style("opacity", nodes_opacity_)
+                d3.selectAll("text").style("opacity", nodes_opacity_)
+
+                d3.select(this)
+                    .transition()
+                    .duration(duration_)
+                    .attr("r", node_radius);
+            })
+
+        textsAndNodes.selectAll("text")
+            .data(_nodes, function(d) { return d.id; })
+            .exit()
+            .remove()
+
+        textsAndNodes.enter()
+            .append("text")
+            .text(function (d) {
+                return d.name;
+            })
+            .attr("x", node_radius)
+            .attr("y", ".35em")
+            .attr("font-size", font_size)
+            .attr("fill", "black")
+            .style("pointer-events", "none")
+
+        simulation.nodes(_nodes);
+        simulation.alpha(1).restart();
+
+        simulation.on("tick", ticked);
+
+        // simulation.start();
+    }
+
+    function addNode(nodeData) {
+        data.nodes.push(nodeData);
+        console.log(data);
+        updateGraph();
+    }
+
+    function addEdge(edgeData) {
+        data.links.push(edgeData);
+
+        updateGraph();
+    }
+
+
 
 });
 

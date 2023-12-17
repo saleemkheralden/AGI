@@ -1,6 +1,7 @@
 from enum import Enum
 
 class cmd(Enum):
+	INIT = "INIT"
 	SHUTDOWN = "SHUTDOWN"
 	UPDATE = "UPDATE"
 	ADD = "ADD"
@@ -9,4 +10,9 @@ class cmd(Enum):
 class string_delim(Enum):
 	COMMAND_TYPE = "@"
 	OBJECT_TYPE = "$"
+	DATA_DEL = "#"
+
+class obj(Enum):
+	NODE = "Node"
+	EDGE = "Edge"
 
