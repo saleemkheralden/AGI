@@ -9,6 +9,12 @@ const node_index = {}
 const node_keys = new Set()
 
 let socket;
+
+const data_ids = {
+    'nodes': [],
+    'links': [],
+}
+
 const data = {
     'nodes': [
         {'id': 1, "label": "Discrete Mathematics"},
@@ -48,18 +54,35 @@ $(document).ready(function () {
 
     socket.on("add-node", (args) => {
         console.log(args);
-        data.nodes.push(args);
-        update();
+        if (!data_ids.nodes.includes(args.id)) {
+            data_ids.nodes.push(args.id)
+            data.nodes.push(args);
+            update();
+        }
     })
 
     let graph_div = document.getElementById('graph');
     let width = graph_div.clientWidth, height = graph_div.clientHeight;
+
+    let zoom_simulation = d3.zoom()
+        .scaleExtent([zoom_out, zoom_in])
+        .on("zoom", zoomed);
 
     let svg = d3.select("#graph")
         .append("svg")
         .style("width", "100%")
         .style("height", "100%")
         .style("background-color", "transparent")
+        .call(zoom_simulation)
+
+    svg = svg.append("g")
+        .attr("class", "zoom-layer")
+        .attr("id", "zoom-layer")
+
+    function zoomed() {
+        svg.attr("transform", d3.event.transform);
+    }
+
 
     svg.append("g")
         .attr("class", "links")
@@ -96,7 +119,8 @@ $(document).ready(function () {
         let links = svg.select("g.links")
             .selectAll("line")
             .data(data.links)
-            .enter()
+
+        let links_enter = links.enter()
             .append("line")
             .attr("stroke", edge_color)
 
@@ -105,15 +129,17 @@ $(document).ready(function () {
         let nodes_container = svg.select("g.nodes")
             .selectAll("g")
             .data(data.nodes)
-            .enter()
+
+        let nodes_container_enter = nodes_container.enter()
             .append("g")
 
-        nodes_container
+        nodes_container_enter
             .append("circle")
             .attr("r", node_radius)
             .attr("fill", node_color)
+            .attr("opacity", d => d.str_score)
 
-        nodes_container.append("text")
+        nodes_container_enter.append("text")
             .text(d => d.label)
             .attr("x", node_radius)
             .attr("y", ".35em")
@@ -144,6 +170,7 @@ $(document).ready(function () {
         .on("tick", ticked); // <- another way to run the simulation
 
         nodes_container.call(drag(simulation));
+        nodes_container_enter.call(drag(simulation));
 
         function ticked() {
             links
@@ -152,7 +179,18 @@ $(document).ready(function () {
                 .attr("x2", function(d) { return d.target.x; })
                 .attr("y2", function(d) { return d.target.y; });
 
+            links_enter
+                .attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
             nodes_container
+                .attr("transform", function(d) {
+                    return "translate(" + d.x + ", " + d.y + ")";
+                })
+
+            nodes_container_enter
                 .attr("transform", function(d) {
                     return "translate(" + d.x + ", " + d.y + ")";
                 })

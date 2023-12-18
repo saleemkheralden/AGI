@@ -5,6 +5,7 @@ import socket
 from threading import Thread
 from time import sleep
 import sys
+import re
 
 dir = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(dir)
@@ -30,11 +31,10 @@ soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 try:
     soc.connect((remote_server_ip, remote_server_port))
-    # soc.settimeout(1)
 except Exception as e:
     CONN_FLAG = False
 
-# print("soc connected")
+
 def remote_server_handler():
     while True:
         try:
@@ -46,24 +46,60 @@ def remote_server_handler():
         if msg:
             print(f"server> {msg}")
 
-            cmd_type, msg = msg.split(string_delim.COMMAND_TYPE.value)
-            obj_type, msg = msg.split(string_delim.OBJECT_TYPE.value)
-            data, str_score = msg.split(string_delim.DATA_DEL.value)
+            cmd_type, obj_type, data = match_command(msg)
 
-            if obj_type == obj.NODE.value:
-                id, type, label = data[1:-1].split(",")
-                print(id, type, label)
+            if cmd_type == cmd.ADD.value:
+                if obj_type == obj.NODE.value:
+                    node_json = match_node(data)
+                    print(node_json)
 
-                socketio.emit("add-node", {
-                    "id": id,
-                    "type": type,
-                    "label": label
-                })
+                    socketio.emit("add-node", node_json)
+                elif obj_type == obj.EDGE.value:
+                    edge_json = match_edge(data)
+                    print(edge_json)
+
+
+
+            elif cmd_type == cmd.REMOVE.value:
+                pass
+            elif cmd_type == cmd.UPDATE.value:
+                pass
+
+
 
         sleep(1)
         if msg == cmd.SHUTDOWN:
             break
     soc.close()
+
+
+def match_command(string: str):
+    cmd_type, string = string.split(string_delim.COMMAND_TYPE.value)
+    obj_type, data = string.split(string_delim.OBJECT_TYPE.value)
+    return cmd_type, obj_type, data
+
+
+def match_node(string: str):
+    id, type, label, str_score = string[1:-1].split(",")
+
+    return {"id": id,
+            "type": type,
+            "label": label,
+            "str_score": str_score,}
+
+
+
+def match_edge(string: str):
+    match = re.match(r"\(id:(.*?),source:(.*?),target:(.*?),str_score:(.*?)\)", string)
+
+    id = match.group(1)
+    source = match.group(2)
+    target = match.group(3)
+    str_score = match.group(4)
+    return {"id": id,
+            "source": match_node(source),
+            "target": match_node(target),
+            "str_score": str_score,}
 
 
 if CONN_FLAG:

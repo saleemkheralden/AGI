@@ -54,7 +54,7 @@ class Node(MemoryUnit):
         return f"MemoryNode(ID: {id_str}, Label: {self.label})"
 
     def __str__(self):
-        return f"({self.id},{self.type},{self.label})#{self.str_score}"
+        return f"({self.id},{self.type},{self.label},{self.str_score})"
 
 
 

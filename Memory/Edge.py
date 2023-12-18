@@ -34,4 +34,4 @@ class Edge(MemoryUnit):
         return self.__str__()
 
     def __str__(self):
-        return f"Edge(source:{self.source},target:{self.target},str_score:{self.str_score})"
+        return f"(id:{self.id},source:{self.source},target:{self.target},str_score:{self.str_score})"
