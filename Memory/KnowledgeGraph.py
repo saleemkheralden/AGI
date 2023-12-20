@@ -47,6 +47,8 @@ class KnowledgeGraph:
             msg = None
 
             with client_socket:
+                print(f"{client_addr}> Connected!")
+
                 flag = False
                 while msg != cmd.SHUTDOWN:
                     try:
@@ -77,7 +79,7 @@ class KnowledgeGraph:
                         client_socket.sendall(self.updates_queue.get().encode("utf-8"))
                     sleep(1)
 
-                client_socket.close()
+                print(f"{client_addr}> Disconnected!")
 
 
     def add_node(self, node: Node):

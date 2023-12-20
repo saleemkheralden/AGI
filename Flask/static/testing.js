@@ -9,34 +9,37 @@ const node_index = {}
 const node_keys = new Set()
 
 let socket;
+let svg, simulation;
 
 const data_ids = {
     'nodes': [],
     'links': [],
 }
 
+const links_q = [];
+
 const data = {
     'nodes': [
-        {'id': 1, "label": "Discrete Mathematics"},
-        {'id': 2, "label": "Calculus 1"},
-        {'id': 3, "label": "Algebra"},
-        {'id': 4, "label": "Intro to comp. sc."},
-        {'id': 5, "label": "Physics 1"},
-
-        {'id': 6, "label": "Into to Data science"},
-        {'id': 7, "label": "Software eng."},
-        {'id': 8, "label": "Computer arch. and OS"},
-        {'id': 9, "label": "Probability"},
-        {'id': 10, "label": "Calculus 2"},
+        // {'id': 1, "label": "Discrete Mathematics", "str_score": 1},
+        // {'id': 2, "label": "Calculus 1", "str_score": 1},
+        // {'id': 3, "label": "Algebra", "str_score": 1},
+        // {'id': "0004", "label": "Intro to comp. sc.", "str_score": .5},
+        // {'id': 5, "label": "Physics 1", "str_score": 1},
+        //
+        // {'id': 6, "label": "Into to Data science", "str_score": 1},
+        // {'id': 7, "label": "Software eng.", "str_score": 1},
+        // {'id': 8, "label": "Computer arch. and OS", "str_score": 1},
+        // {'id': 9, "label": "Probability", "str_score": 1},
+        // {'id': 10, "label": "Calculus 2", "str_score": 1},
     ],
     'links': [
-        {"source": 1, "target": 2, "weight": 1},
-        {"source": 6, "target": 4, "weight": 1},
-        {"source": 6, "target": 3, "weight": 1},
-        {"source": 7, "target": 4, "weight": 1},
-        {"source": 8, "target": 4, "weight": 1},
-        {"source": 9, "target": 2, "weight": 1},
-        {"source": 10, "target": 2, "weight": 1},
+        // {"source": 1, "target": 2, "str_score": .5},
+        // {"id": 1, "source": 6, "target": "0004", "str_score": .8},
+        // {"id": 2, "source": 6, "target": 3, "str_score": .7},
+        // {"id": 3, "source": 7, "target": "0004", "str_score": 1},
+        // {"id": 4, "source": 8, "target": "0004", "str_score": .1},
+        // {"id": 5, "source": 9, "target": 2, "str_score": 1},
+        // {"id": 6, "source": 10, "target": 2, "str_score": 1},
     ],
 }
 
@@ -61,6 +64,42 @@ $(document).ready(function () {
         }
     })
 
+    socket.on("add-edge", (args) => {
+        console.log(args);
+        if (!data_ids.links.includes(args.id)) {
+            data_ids.links.push(args.id);
+
+            let edge_json = {
+                "id": args.id,
+                "source": args.source.id,
+                "target": args.target.id,
+                "str_score": args.str_score,
+            }
+            console.log(edge_json)
+
+            links_q.push(edge_json);
+        }
+    })
+
+    socket.on("add-test-edge", (args) => {
+        console.log(args);
+        if (!data_ids.links.includes(args.id)) {
+            data_ids.links.push(args.id);
+            links_q.push(args);
+        }
+    })
+
+    setInterval(() => {
+        if (simulation.alpha() < 0.001)
+            if (links_q.length > 0) {
+                console.log("from set interval");
+                console.log(simulation.alpha())
+                data.links.push(links_q.pop())
+                update()
+            }
+    }, 100)
+
+
     let graph_div = document.getElementById('graph');
     let width = graph_div.clientWidth, height = graph_div.clientHeight;
 
@@ -68,7 +107,7 @@ $(document).ready(function () {
         .scaleExtent([zoom_out, zoom_in])
         .on("zoom", zoomed);
 
-    let svg = d3.select("#graph")
+    svg = d3.select("#graph")
         .append("svg")
         .style("width", "100%")
         .style("height", "100%")
@@ -116,22 +155,14 @@ $(document).ready(function () {
 
 
     function update() {
-        let links = svg.select("g.links")
-            .selectAll("line")
-            .data(data.links)
-
-        let links_enter = links.enter()
-            .append("line")
-            .attr("stroke", edge_color)
-
-        links.exit().remove();
-
+        // Add nodes
         let nodes_container = svg.select("g.nodes")
             .selectAll("g")
             .data(data.nodes)
 
         let nodes_container_enter = nodes_container.enter()
             .append("g")
+
 
         nodes_container_enter
             .append("circle")
@@ -150,7 +181,24 @@ $(document).ready(function () {
 
         nodes_container.exit().remove();
 
-        let simulation = d3.forceSimulation(data.nodes) // <- this is another way to run the simulation
+        // Add links
+        let links = svg.select("g.links")
+            .selectAll("line")
+            .data(data.links)
+
+        let links_enter = links.enter()
+            .append("line")
+
+        links_enter.attr("stroke", edge_color)
+            .attr("opacity", d => d.str_score)
+
+        console.log(links_enter);
+
+        links.exit().remove();
+
+
+
+        simulation = d3.forceSimulation(data.nodes) // <- this is another way to run the simulation
             .force("link",
                 d3.forceLink()
                     .id(d => d.id)
@@ -167,24 +215,21 @@ $(document).ready(function () {
             .force("center", d3.forceCenter(width / 2, height / 2))
             // This line adds a centering force to the simulation,
             // attracting nodes towards the center of the SVG container.
-        .on("tick", ticked); // <- another way to run the simulation
+        .on("tick", ticked) // <- another way to run the simulation
+        // .on("end", () => {
+        //     if (links_q.length > 0) {
+        //         console.log("ADDING EDGE")
+        //         let edge = links_q.pop();
+        //         console.log(edge)
+        //         data.links.push(edge);
+        //         update();
+        //     }
+        // })
 
         nodes_container.call(drag(simulation));
         nodes_container_enter.call(drag(simulation));
 
         function ticked() {
-            links
-                .attr("x1", function(d) { return d.source.x; })
-                .attr("y1", function(d) { return d.source.y; })
-                .attr("x2", function(d) { return d.target.x; })
-                .attr("y2", function(d) { return d.target.y; });
-
-            links_enter
-                .attr("x1", function(d) { return d.source.x; })
-                .attr("y1", function(d) { return d.source.y; })
-                .attr("x2", function(d) { return d.target.x; })
-                .attr("y2", function(d) { return d.target.y; });
-
             nodes_container
                 .attr("transform", function(d) {
                     return "translate(" + d.x + ", " + d.y + ")";
@@ -194,6 +239,20 @@ $(document).ready(function () {
                 .attr("transform", function(d) {
                     return "translate(" + d.x + ", " + d.y + ")";
                 })
+
+            links
+                .attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
+
+            links_enter
+                .attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
                 // .attr("cx", function(d) { return d.x; })
                 // .attr("cy", function(d) { return d.y; });
         }

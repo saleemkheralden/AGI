@@ -100,7 +100,10 @@ $(document).ready(function () {
             "name": args.label,
             "level": 0
         })
+    })
 
+    socket.on("add-edge", (args) => {
+        console.log(args);
     })
 
     let graph_div = document.getElementById('graph');

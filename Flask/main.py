@@ -23,20 +23,22 @@ server_ip = "0.0.0.0"
 server_port = 5000
 
 
-remote_server_ip = "10.0.0.19"
+remote_server_ip = "127.0.0.1"
 remote_server_port = 45000
 BUF_SIZE = 2048
 CONN_FLAG = True
+RUNNING = True
 soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 try:
     soc.connect((remote_server_ip, remote_server_port))
+    soc.settimeout(1)
 except Exception as e:
     CONN_FLAG = False
 
 
 def remote_server_handler():
-    while True:
+    while RUNNING:
         try:
             msg = soc.recv(BUF_SIZE)
             msg = msg.decode()
@@ -51,12 +53,14 @@ def remote_server_handler():
             if cmd_type == cmd.ADD.value:
                 if obj_type == obj.NODE.value:
                     node_json = match_node(data)
-                    print(node_json)
+                    print(f"node json> {node_json}")
 
                     socketio.emit("add-node", node_json)
                 elif obj_type == obj.EDGE.value:
                     edge_json = match_edge(data)
-                    print(edge_json)
+                    print(f"edge json> {edge_json}")
+
+                    socketio.emit("add-edge", edge_json)
 
 
 
@@ -70,7 +74,9 @@ def remote_server_handler():
         sleep(1)
         if msg == cmd.SHUTDOWN:
             break
+    soc.send(cmd.SHUTDOWN.value.encode("utf-8"))
     soc.close()
+    print("Disconnected!")
 
 
 def match_command(string: str):
@@ -115,6 +121,11 @@ def client_connect(args):
         print("sending init")
         soc.send(cmd.INIT.value.encode("utf-8"))
     socketio.emit("hello", {"msg": "HELLO"})
+
+
+@socketio.on("add-test-edge")
+def test(args):
+    socketio.emit("add-test-edge", args)
 
 @app.route('/')
 def index():
