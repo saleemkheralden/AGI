@@ -27,6 +27,13 @@ class KnowledgeGraph:
             self.th = Thread(target=self.server)
             self.th.start()
 
+        self.decay_status = True
+        self.decay_thread = Thread(target=self.decay)
+        self.decay_thread.start()
+
+    def close(self):
+        self.server_status = False
+        self.decay_status = False
 
     def server(self):
         addr = (self.server_ip, self.server_port)
@@ -80,7 +87,7 @@ class KnowledgeGraph:
                     sleep(1)
 
                 print(f"{client_addr}> Disconnected!")
-
+        server_socket.close()
 
     def add_node(self, node: Node):
         self.nodes[node.id] = node
@@ -97,6 +104,11 @@ class KnowledgeGraph:
         if node_id in self.nodes.keys():
             return self.nodes[node_id]
         return None
+
+    def decay_node(self, node):
+        score = node.ebbinghaus_decay()
+        self.updates_queue.put(f"{cmd.UPDATE.value}{string_delim.COMMAND_TYPE.value}"
+                               f"{obj.NODE.value}{string_delim.OBJECT_TYPE.value}({node.id},{score})")
 
     def add_edge(self, source, target):
         _edge = Edge(id=hash(f"{source.id}{target.id}"),
@@ -115,7 +127,6 @@ class KnowledgeGraph:
         self.updates_queue.put(f"{cmd.ADD.value}{string_delim.COMMAND_TYPE.value}"
                                f"{obj.EDGE.value}{string_delim.OBJECT_TYPE.value}{edge}")
 
-
     def remove_edge(self, edge):
         if edge in self.edges:
             self.edges.remove(edge)
@@ -124,6 +135,19 @@ class KnowledgeGraph:
         edge.source.remove_conn(edge)
         self.updates_queue.put(f"{cmd.REMOVE.value}{string_delim.COMMAND_TYPE.value}"
                                f"{obj.EDGE.value}{string_delim.OBJECT_TYPE.value}{edge}")
+
+    def decay_edge(self, edge):
+        score = edge.ebbinghaus_decay()
+        self.updates_queue.put(f"{cmd.UPDATE.value}{string_delim.COMMAND_TYPE.value}"
+                               f"{obj.EDGE.value}{string_delim.OBJECT_TYPE.value}({edge.id},{score})")
+
+    def decay(self):
+        while self.decay_status:
+            sleep(1)
+            for node in self.nodes.values():
+                self.decay_node(node)
+            for edge in self.edges:
+                self.decay_edge(edge)
 
     def get_all_nodes(self):
         return list(self.nodes)

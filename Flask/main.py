@@ -67,7 +67,9 @@ def remote_server_handler():
             elif cmd_type == cmd.REMOVE.value:
                 pass
             elif cmd_type == cmd.UPDATE.value:
-                pass
+                # socketio.emit("update", )
+                id, str_score = data[1:-1].split(",")
+                print(obj_type, id, str_score)
 
 
 
@@ -92,7 +94,6 @@ def match_node(string: str):
             "type": type,
             "label": label,
             "str_score": str_score,}
-
 
 
 def match_edge(string: str):
