@@ -2,6 +2,7 @@ from Memory.KnowledgeGraph import KnowledgeGraph
 from Memory.Node import Node
 from Memory.Edge import Edge
 from time import sleep
+from server_commands import cmd
 
 kg = KnowledgeGraph(connect_ui=True)
 
@@ -40,8 +41,10 @@ print(kg.updates_queue.queue)
 
 
 msg = ""
-while msg != "QUIT":
+while True:
 	msg = input("msg")
+	if msg == "exit":
+		break
 
 	id = input("id: ")
 	label = input("label: ")

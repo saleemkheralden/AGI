@@ -26,24 +26,33 @@ server_port = 5000
 remote_server_ip = "127.0.0.1"
 remote_server_port = 45000
 BUF_SIZE = 2048
-CONN_FLAG = True
+CONN_FLAG = False
 RUNNING = True
 soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-try:
-    soc.connect((remote_server_ip, remote_server_port))
-    soc.settimeout(1)
-except Exception as e:
-    CONN_FLAG = False
 
-
+# Server handler function
+# Connects to the KG server and start receiving updates on the graph
 def remote_server_handler():
+    global CONN_FLAG
+    while not CONN_FLAG:
+        try:
+            soc.connect((remote_server_ip, remote_server_port))
+            soc.settimeout(1)
+            CONN_FLAG = True
+        except Exception as e:
+            pass
+
     while RUNNING:
         try:
             msg = soc.recv(BUF_SIZE)
             msg = msg.decode()
         except socket.timeout as e:
             msg = None
+
+        if msg == cmd.SHUTDOWN:
+            print(f"server> {msg}")
+            break
 
         if msg:
             print(f"server> {msg}")
@@ -73,9 +82,8 @@ def remote_server_handler():
 
 
 
-        sleep(1)
-        if msg == cmd.SHUTDOWN:
-            break
+        # sleep(1)
+
     soc.send(cmd.SHUTDOWN.value.encode("utf-8"))
     soc.close()
     print("Disconnected!")
@@ -109,12 +117,7 @@ def match_edge(string: str):
             "str_score": str_score,}
 
 
-if CONN_FLAG:
-    th = Thread(target=remote_server_handler)
-    th.start()
-    # CONN_FLAG = False
-
-
+# Flask server functions
 @socketio.on("client-connect")
 def client_connect(args):
     print(f"client connected (CONN_FLAG {CONN_FLAG})")
@@ -128,9 +131,13 @@ def client_connect(args):
 def test(args):
     socketio.emit("add-test-edge", args)
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
 
+
+th = Thread(target=remote_server_handler)
+th.start()
 
 socketio.run(app.run(server_ip, server_port))

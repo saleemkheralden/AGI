@@ -69,12 +69,14 @@ class KnowledgeGraph:
                             for node in self.nodes.values():
                                 print(f"sending {node}")
                                 client_socket.sendall(f"{cmd.ADD.value}{string_delim.COMMAND_TYPE.value}"
-                                                   f"{obj.NODE.value}{string_delim.OBJECT_TYPE.value}{node}".encode("utf-8"))
+                                                      f"{obj.NODE.value}{string_delim.OBJECT_TYPE.value}{node}"
+                                                      .encode("utf-8"))
                                 sleep(1)
                             for edge in self.edges:
                                 print(f"sending {edge}")
                                 client_socket.sendall(f"{cmd.ADD.value}{string_delim.COMMAND_TYPE.value}"
-                                                   f"{obj.EDGE.value}{string_delim.OBJECT_TYPE.value}{edge}".encode("utf-8"))
+                                                      f"{obj.EDGE.value}{string_delim.OBJECT_TYPE.value}{edge}"
+                                                      .encode("utf-8"))
                                 sleep(1)
 
                     except socket.timeout as e:
@@ -89,15 +91,18 @@ class KnowledgeGraph:
                 print(f"{client_addr}> Disconnected!")
         server_socket.close()
 
+    def push_queue(self, msg):
+        self.updates_queue.put(msg)
+
     def add_node(self, node: Node):
         self.nodes[node.id] = node
-        self.updates_queue.put(f"{cmd.ADD.value}{string_delim.COMMAND_TYPE.value}"
-                               f"{obj.NODE.value}{string_delim.OBJECT_TYPE.value}{node}")
+        self.push_queue(f"{cmd.ADD.value}{string_delim.COMMAND_TYPE.value}"
+                        f"{obj.NODE.value}{string_delim.OBJECT_TYPE.value}{node}")
 
     def remove_node(self, node):
         if node.id in self.nodes.keys():
-            self.updates_queue.put(f"{cmd.REMOVE.value}{string_delim.COMMAND_TYPE.value}"
-                                   f"{obj.NODE.value}{string_delim.OBJECT_TYPE.value}{node}")
+            self.push_queue(f"{cmd.REMOVE.value}{string_delim.COMMAND_TYPE.value}"
+                            f"{obj.NODE.value}{string_delim.OBJECT_TYPE.value}{node}")
             del self.nodes[node.id]
 
     def get_node(self, node_id):
@@ -107,13 +112,13 @@ class KnowledgeGraph:
 
     def decay_node(self, node):
         score = node.ebbinghaus_decay()
-        self.updates_queue.put(f"{cmd.UPDATE.value}{string_delim.COMMAND_TYPE.value}"
-                               f"{obj.NODE.value}{string_delim.OBJECT_TYPE.value}({node.id},{score})")
+        self.push_queue(f"{cmd.UPDATE.value}{string_delim.COMMAND_TYPE.value}"
+                        f"{obj.NODE.value}{string_delim.OBJECT_TYPE.value}({node.id},{score})")
 
     def add_edge(self, source, target):
         _edge = Edge(id=hash(f"{source.id}{target.id}"),
-                           source=source,
-                           target=target)
+                     source=source,
+                     target=target)
         self.add_edge(_edge)
 
     def add_edge(self, edge: Edge):
@@ -124,8 +129,8 @@ class KnowledgeGraph:
             self.neigh_matrix[edge.source.id] = {}
         self.neigh_matrix[edge.source.id][edge.target.id] = edge.str_score
 
-        self.updates_queue.put(f"{cmd.ADD.value}{string_delim.COMMAND_TYPE.value}"
-                               f"{obj.EDGE.value}{string_delim.OBJECT_TYPE.value}{edge}")
+        self.push_queue(f"{cmd.ADD.value}{string_delim.COMMAND_TYPE.value}"
+                        f"{obj.EDGE.value}{string_delim.OBJECT_TYPE.value}{edge}")
 
     def remove_edge(self, edge):
         if edge in self.edges:
@@ -133,13 +138,13 @@ class KnowledgeGraph:
         if edge.target.id in self.neigh_matrix[edge.source.id]:
             self.neigh_matrix[edge.source.id].pop(edge.target.id)
         edge.source.remove_conn(edge)
-        self.updates_queue.put(f"{cmd.REMOVE.value}{string_delim.COMMAND_TYPE.value}"
-                               f"{obj.EDGE.value}{string_delim.OBJECT_TYPE.value}{edge}")
+        self.push_queue(f"{cmd.REMOVE.value}{string_delim.COMMAND_TYPE.value}"
+                        f"{obj.EDGE.value}{string_delim.OBJECT_TYPE.value}{edge}")
 
     def decay_edge(self, edge):
         score = edge.ebbinghaus_decay()
-        self.updates_queue.put(f"{cmd.UPDATE.value}{string_delim.COMMAND_TYPE.value}"
-                               f"{obj.EDGE.value}{string_delim.OBJECT_TYPE.value}({edge.id},{score})")
+        self.push_queue(f"{cmd.UPDATE.value}{string_delim.COMMAND_TYPE.value}"
+                        f"{obj.EDGE.value}{string_delim.OBJECT_TYPE.value}({edge.id},{score})")
 
     def decay(self):
         while self.decay_status:
