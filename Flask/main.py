@@ -76,9 +76,14 @@ def remote_server_handler():
             elif cmd_type == cmd.REMOVE.value:
                 pass
             elif cmd_type == cmd.UPDATE.value:
-                # socketio.emit("update", )
                 id, str_score = data[1:-1].split(",")
-                print(obj_type, id, str_score)
+                update_json = {
+                    "id": id,
+                    "obj_type": obj_type,
+                    "str_score": str_score,
+                }
+                socketio.emit("update", update_json)
+                # print(obj_type, id, str_score)
 
 
 

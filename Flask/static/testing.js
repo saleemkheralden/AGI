@@ -89,6 +89,10 @@ $(document).ready(function () {
         }
     })
 
+    socket.on("update", (args) => {
+        console.log(args);
+    })
+
     setInterval(() => {
         if (simulation.alpha() < 0.001)
             if (links_q.length > 0) {
